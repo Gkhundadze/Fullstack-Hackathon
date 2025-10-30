@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css'
-import axios from 'axios'
+import { instance } from './instance/axiosInstance';
 import TodoList from './components/TodoList/TodoList';
 import { useEffect } from 'react';
 import TodoForm from './components/TodoForm/TodoForm';
@@ -10,7 +10,8 @@ function App() {
 
   async function getAllTodos() {
     try {
-      const response = await axios.get('http://localhost:5000/api/todos');
+
+      const response = await instance.get('todos');
       console.log(response.data);
 
       setTodos(response.data);
@@ -20,9 +21,10 @@ function App() {
     }
 
   }
+
   async function createNewTodo(newTodo) {
     try {
-      const response = await axios.post('http://localhost:5000/api/todos', newTodo);
+      const response = await instance.post('todos', newTodo);
       console.log(response.data);
 
       if (response.status === 201) {
@@ -37,6 +39,40 @@ function App() {
 
   }
 
+  async function checkTodo(id) {
+    try {
+      const response = await instance.put(`todos/${id}/toggle`);
+      console.log(response.data);
+
+      if (response.status === 200) {
+        // Refresh the todo list after successful update
+        getAllTodos();
+      }
+      
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+  } 
+
+  async function deleteTodo(id) {
+    try {
+      const response = await instance.delete(`todos/${id}`);
+      console.log(response.data);
+
+      if (response.status === 204) {
+        // Refresh the todo list after successful deletion
+        getAllTodos();
+      }
+      
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+  } 
+
   useEffect(() => {
     getAllTodos();
   }, []);
@@ -44,7 +80,7 @@ function App() {
   return (
     <>
       <TodoForm createNewTodo={createNewTodo} />
-      <TodoList todos={todos} />
+      <TodoList todos={todos} checkTodo={checkTodo} deleteTodo={deleteTodo}/>
     </>
   )
 }
