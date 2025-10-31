@@ -6,80 +6,69 @@ import { useEffect } from 'react';
 import TodoForm from './components/TodoForm/TodoForm';
 
 function App() {
+  // save todos in state
   const [todos, setTodos] = useState([]);
 
+// get all todos from backend
   async function getAllTodos() {
     try {
-
       const response = await instance.get('todos');
-      console.log(response.data);
-
       setTodos(response.data);
     }
     catch (err) {
       console.error(err);
     }
-
   }
-
+// create new todo, takes newTodo object as parameter
   async function createNewTodo(newTodo) {
     try {
       const response = await instance.post('todos', newTodo);
-      console.log(response.data);
-
       if (response.status === 201) {
         // Refresh the todo list after successful creation
         getAllTodos();
       }
-      
     }
     catch (err) {
       console.error(err);
     }
-
   }
-
+// toggle todo completed status, takes todo id as parameter
   async function checkTodo(id) {
     try {
       const response = await instance.put(`todos/${id}/toggle`);
-      console.log(response.data);
-
       if (response.status === 200) {
         // Refresh the todo list after successful update
         getAllTodos();
       }
-      
     }
     catch (err) {
       console.error(err);
     }
-
   } 
-
+// delete todo, takes todo id as parameter
   async function deleteTodo(id) {
     try {
       const response = await instance.delete(`todos/${id}`);
-      console.log(response.data);
-
       if (response.status === 204) {
         // Refresh the todo list after successful deletion
         getAllTodos();
       }
-      
     }
     catch (err) {
       console.error(err);
     }
-
   } 
 
+  // Initial fetch of todos
   useEffect(() => {
     getAllTodos();
   }, []);
 
   return (
     <>
+        {/* renders todo form, passing createNewTodo as prop */}
       <TodoForm createNewTodo={createNewTodo} />
+        {/* renders todo list passing checkTodo and deleteTodo as prop */}
       <TodoList todos={todos} checkTodo={checkTodo} deleteTodo={deleteTodo}/>
     </>
   )
