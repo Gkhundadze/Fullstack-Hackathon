@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 function App() {
+  // save todos in state
   const [todos, setTodos] = useState([]);
 
   // ------------------ GET ALL TODOS ------------------
@@ -20,6 +21,45 @@ function App() {
       toast.error("Failed to fetch todos.");
     }
   }
+// create new todo, takes newTodo object as parameter
+  async function createNewTodo(newTodo) {
+    try {
+      const response = await instance.post('todos', newTodo);
+      if (response.status === 201) {
+        // Refresh the todo list after successful creation
+        getAllTodos();
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+  }
+// toggle todo completed status, takes todo id as parameter
+  async function checkTodo(id) {
+    try {
+      const response = await instance.put(`todos/${id}/toggle`);
+      if (response.status === 200) {
+        // Refresh the todo list after successful update
+        getAllTodos();
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+  } 
+// delete todo, takes todo id as parameter
+  async function deleteTodo(id) {
+    try {
+      const response = await instance.delete(`todos/${id}`);
+      if (response.status === 204) {
+        // Refresh the todo list after successful deletion
+        getAllTodos();
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+  } 
 
   // ------------------ CREATE TODO ------------------
   async function createTodo(title) {

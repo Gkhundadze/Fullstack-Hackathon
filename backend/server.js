@@ -7,11 +7,18 @@ import 'dayjs/locale/ka.js';
 import joi from 'joi';
 import mongoose from 'mongoose';
 
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 dayjs.locale('ka');
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI
+
+const dataFilePath = path.join(__dirname, 'data/data.json');
+
+console.log(dataFilePath);
 
 const app = express();
 app.use(cors());
