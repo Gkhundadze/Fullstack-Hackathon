@@ -1,0 +1,49 @@
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease-in-out;
+}
+
+.todo-item.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.todo-item .buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.todo-item .toggle-btn {
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.todo-item .toggle-btn.done {
+  background-color: #81c784; /* არ დასრულებული */
+}
+
+.todo-item .toggle-btn.undo {
+  background-color: #ffb74d; /* დასრულებული */
+}
+
+.todo-item .delete-btn {
+  background-color: #e57373;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 500;
+}
