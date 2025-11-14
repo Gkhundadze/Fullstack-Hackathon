@@ -1,71 +1,52 @@
 import { useState, useEffect } from "react";
 import "./App.css";
-import axios from "axios";
 import TodoList from "./components/TodoList/TodoList";
 import TodoForm from "./components/TodoForm/TodoForm";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getTodos, createTodoRequest, deleteTodoRequest, toggleTodoRequest } from "./services/todoService";
+import SkeletonTodoList from "./components/SkeletonTodoList/SkeletonTodoList";
 
 function App() {
-  // save todos in state
   const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showSkeleton, setShowSkeleton] = useState(true);
+  const [fadeSkeleton, setFadeSkeleton] = useState(false); // triggers CSS fade
+
 
   // ------------------ GET ALL TODOS ------------------
-  async function getAllTodos() {
-    try {
-      const response = await axios.get("http://localhost:5000/api/todos");
-      setTodos(response.data);
-      toast.success("Todos loaded successfully!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to fetch todos.");
-    }
+async function getAllTodos() {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const response = await getTodos();
+    setTodos(response.data);
+
+    // small delay to let browser render skeleton first
+    requestAnimationFrame(() => {
+      setFadeSkeleton(true);
+    });
+
+    // remove skeleton after fade duration (500ms)
+    setTimeout(() => {
+      setShowSkeleton(false);
+    }, 500);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to load todos.");
+    setShowSkeleton(false);
+  } finally {
+    setLoading(false);
   }
-// create new todo, takes newTodo object as parameter
-  async function createNewTodo(newTodo) {
-    try {
-      const response = await instance.post('todos', newTodo);
-      if (response.status === 201) {
-        // Refresh the todo list after successful creation
-        getAllTodos();
-      }
-    }
-    catch (err) {
-      console.error(err);
-    }
-  }
-// toggle todo completed status, takes todo id as parameter
-  async function checkTodo(id) {
-    try {
-      const response = await instance.put(`todos/${id}/toggle`);
-      if (response.status === 200) {
-        // Refresh the todo list after successful update
-        getAllTodos();
-      }
-    }
-    catch (err) {
-      console.error(err);
-    }
-  } 
-// delete todo, takes todo id as parameter
-  async function deleteTodo(id) {
-    try {
-      const response = await instance.delete(`todos/${id}`);
-      if (response.status === 204) {
-        // Refresh the todo list after successful deletion
-        getAllTodos();
-      }
-    }
-    catch (err) {
-      console.error(err);
-    }
-  } 
+}
 
   // ------------------ CREATE TODO ------------------
   async function createTodo(title) {
     try {
-      const response = await axios.post("http://localhost:5000/api/todos", { title });
-      setTodos([...todos, response.data]);
+      const response = await createTodoRequest(title);
+      setTodos((prev) => [...prev, response.data]);
       toast.success("Todo added successfully!");
     } catch (err) {
       console.error(err);
@@ -76,9 +57,9 @@ function App() {
   // ------------------ DELETE TODO ------------------
   async function deleteTodo(id) {
     try {
-      const response = await axios.delete(`http://localhost:5000/api/todos/${id}`);
+      const response = await deleteTodoRequest(id);
       if (response.status === 204) {
-        setTodos(prev => prev.filter(todo => todo._id !== id));
+        setTodos((prev) => prev.filter((todo) => todo._id !== id));
         toast.success("Todo deleted successfully!");
       }
     } catch (err) {
@@ -90,15 +71,14 @@ function App() {
   // ------------------ TOGGLE TODO ------------------
   async function toggleTodo(id) {
     try {
-      const response = await axios.put(`http://localhost:5000/api/todos/${id}/toggle`);
+      const response = await toggleTodoRequest(id);
       const updatedTodo = response.data;
-
-      setTodos(prevTodos =>
-        prevTodos.map(todo =>
-          todo._id === updatedTodo._id ? updatedTodo : todo
-        )
+      setTodos((prev) =>
+        prev.map((todo) => (todo._id === updatedTodo._id ? updatedTodo : todo))
       );
-      toast.success(`Todo marked as ${updatedTodo.completed ? "completed" : "not completed"}!`);
+      toast.success(
+        `Todo marked as ${updatedTodo.completed ? "completed" : "not completed"}!`
+      );
     } catch (err) {
       console.error(err);
       toast.error("Failed to toggle todo.");
@@ -107,24 +87,45 @@ function App() {
 
   // ------------------ INITIAL LOAD ------------------
   useEffect(() => {
-    getAllTodos();
+     getAllTodos();
   }, []);
 
   return (
     <>
+      {/* Todo Form */}
       <TodoForm createTodo={createTodo} />
-      <TodoList todos={todos} deleteTodo={deleteTodo} toggleTodo={toggleTodo} />
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      {/* Skeleton Loader with fade-out */}
+      {showSkeleton && (
+        <div
+          className={`skeleton-wrapper ${fadeSkeleton ? "fade-out" : ""}`}
+          style={{ transition: "opacity 0.5s ease-in-out" }}
+        >
+          <SkeletonTodoList />
+        </div>
+      )}
+
+      {/* Error Message */}
+      {!loading && error && (
+        <p style={{ color: "red", textAlign: "center", marginTop: "20px" }}>
+          {error}
+        </p>
+      )}
+
+      {/* Todo List */}
+      {!loading && !error && (
+        <div
+          className="todo-list-wrapper"
+          style={{ opacity: showSkeleton ? 0 : 1, transition: "opacity 0.5s ease-in-out" }}
+        >
+          <TodoList
+            todos={todos}
+            deleteTodo={deleteTodo}
+            toggleTodo={toggleTodo}
+          />
+        </div>
+      )}
+
+      <ToastContainer autoClose={2000} />
     </>
   );
 }

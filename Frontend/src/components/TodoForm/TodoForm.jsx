@@ -1,7 +1,7 @@
 import {useState} from "react";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import "./TodoForm.css"; // Import CSS
+import "./TodoForm.css";
 
 export default function TodoForm({ createTodo }) {
   const [title, setTitle] = useState("");
