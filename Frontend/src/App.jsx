@@ -21,7 +21,7 @@ async function getAllTodos() {
   setError(null);
 
   try {
-    const response = await getTodos();
+    const response = await getTodos('todos');
     setTodos(response.data);
 
     // small delay to let browser render skeleton first
@@ -45,7 +45,7 @@ async function getAllTodos() {
   // ------------------ CREATE TODO ------------------
   async function createTodo(title) {
     try {
-      const response = await createTodoRequest(title);
+      const response = await createTodoRequest('todos', title);
       setTodos((prev) => [...prev, response.data]);
       toast.success("Todo added successfully!");
     } catch (err) {
@@ -57,7 +57,7 @@ async function getAllTodos() {
   // ------------------ DELETE TODO ------------------
   async function deleteTodo(id) {
     try {
-      const response = await deleteTodoRequest(id);
+      const response = await deleteTodoRequest('todos', id);
       if (response.status === 204) {
         setTodos((prev) => prev.filter((todo) => todo._id !== id));
         toast.success("Todo deleted successfully!");
@@ -71,7 +71,7 @@ async function getAllTodos() {
   // ------------------ TOGGLE TODO ------------------
   async function toggleTodo(id) {
     try {
-      const response = await toggleTodoRequest(id);
+      const response = await toggleTodoRequest('todos', id);
       const updatedTodo = response.data;
       setTodos((prev) =>
         prev.map((todo) => (todo._id === updatedTodo._id ? updatedTodo : todo))
